@@ -10,8 +10,8 @@
  *       Revision:  none
  *       Compiler:  gcc
  *
- *         Author:  wujd (), 
- *   Organization:  
+ *         Author:  wujd 
+ *   Organization:  Alibaba
  *
  * =====================================================================================
  */
@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <string.h>
-#include "PETools.h"
+#include "../header/PETools.h"
 
 
 PIMAE_DOS_HEADER pDosHeader = NULL;

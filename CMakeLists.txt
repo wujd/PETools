@@ -1,18 +1,19 @@
 #CMake 最低版本号要求
 cmake_minimum_required (VERSION 2.8)
 
-# 项目信息
+# 定义项目名称
 project (PETools)
 
-# 查找当前目录下的所有源文件
-# 并将名称保存到 DIR_SRCS 变量
-aux_source_directory(. DIR_SRCS)
+# 定义项目的源文件目录
+aux_source_directory(./source PROJECT_SOURCE_DIR)
 
-# 指定生成目标
-add_executable(PETools ${DIR_SRCS})
+# 定义编译输出目录
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ./build/)
+# 定义编译输出可执行文件名
+add_executable(${PROJECT_NAME} ${PROJECT_SOURCE_DIR})
 
-# 启用测试
-#enable_testing()
-# 测试程序是否成功运行
-#add_test (test_run PETools ~/Desktop/notepad.exe)
-#add_custom_command(run ./PETools)
+
+# 定义可执行文件运行参数
+set(CUSTOM_RUN_ARGUMENTS "./resource/notepad.exe")
+# 添加一个自定义运行规则 
+ADD_CUSTOM_TARGET(run ./build/${PROJECT_NAME} ${CUSTOM_RUN_ARGUMENTS})
