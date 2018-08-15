@@ -22,9 +22,6 @@
 #include "../header/PETools.h"
 
 
-PIMAE_DOS_HEADER pDosHeader = NULL;
-PIMAE_PE_HEADER pPEHeader = NULL;
-PIMAE_OPTION_PE_HEADER pPEOptionHeader = NULL;
 
 int checkPE(PIMAE_DOS_HEADER pDosHeader)
 {
@@ -38,26 +35,27 @@ int checkPE(PIMAE_DOS_HEADER pDosHeader)
 	return 0;
 }
 
-int readDosHeader(void*	pFileBuffer,PIMAE_DOS_HEADER pDosHeader)
+int readDosHeader(void*	pFileBuffer,PIMAE_DOS_HEADER *pDosHeader)
 {
 	if(pFileBuffer == NULL)
 	{
-		printf("file buffer is null!\n");
+		printf("File Buffer Is Null!\n");
 		return -1;
 	}
 
-	pDosHeader = (PIMAE_DOS_HEADER)pFileBuffer;
-	if(pDosHeader == NULL)
+	*pDosHeader = (PIMAE_DOS_HEADER)pFileBuffer;
+	if(*pDosHeader == NULL)
 	{
 		printf("read dos header failed!\n");
 		return -1;
 	}
-	if(checkPE(pDosHeader) != -1)
+	if(checkPE(*pDosHeader) != -1)
 	{
 		printf("Dos头读取成功!\n");
 	}
 	return 0;
 }
+
 
 int readPEHeader(void* pFileBuffer,PIMAE_PE_HEADER pPEHeader)
 {
@@ -65,11 +63,10 @@ int readPEHeader(void* pFileBuffer,PIMAE_PE_HEADER pPEHeader)
 	return 0;
 }
 
-int ReadFileToRAM(char *pFilePath,void **pFileBuffer)
+int readFileToRAM(char *pFilePath,void **pFileBuffer)
 {
 	FILE *pFile;
 	int fileSize;
-	int fileReadSize;
 
 	if( (pFile=fopen(pFilePath, "rb")) == NULL)
 	{
@@ -80,6 +77,7 @@ int ReadFileToRAM(char *pFilePath,void **pFileBuffer)
 
 	fseek(pFile, 0, SEEK_END);
 	fileSize = ftell(pFile);
+	printf("File Size=%d\n",fileSize);
 	*pFileBuffer = malloc(fileSize);
 	if(*pFileBuffer == NULL)
 	{
@@ -91,8 +89,7 @@ int ReadFileToRAM(char *pFilePath,void **pFileBuffer)
 	memset(*pFileBuffer,0,fileSize);
 
 	fseek(pFile, 0, SEEK_SET);
-	fileReadSize = fread(*pFileBuffer,fileSize,1, pFile);
-	if(fileReadSize==0)
+	if(fread(*pFileBuffer,fileSize,1, pFile)==0)
 	{
 		printf("File Read Failed!\n");
 		fclose(pFile);
@@ -100,14 +97,61 @@ int ReadFileToRAM(char *pFilePath,void **pFileBuffer)
 		return -1;
 	}
 
-	printf("malloc %p\n", *pFileBuffer);
-	printf("File Read to RAM Success,size=%d\n",fileReadSize);
-	return fileReadSize;
+	printf("File Read to RAM Success,size=%d\n",fileSize);
+	return 0;
 }
+
+void shortArrayToString(short* shortArray)
+{
+	int i=0;
+	for(;i<sizeof(shortArray);i++)
+	{
+		printf("e_res:%04x",shortArray[i]);
+	}
+	printf("\n");
+}
+
+void printfDosHeader(PIMAE_DOS_HEADER pDosHeader)
+{
+	if(pDosHeader==NULL)
+	{
+		printf("读取Dos头时指针为NULL!\n");
+		return;
+	}
+
+	printf("--------------------------------\n");
+	printf("           DOS头部分            \n");
+	printf("--------------------------------\n");
+	printf("e_magic:%x\n",pDosHeader->e_magic);
+	printf("e_cblp:%04x\n",pDosHeader->e_cblp);
+	printf("e_cp:%04x\n",pDosHeader->e_cp);
+	printf("e_crlc:%04x\n",pDosHeader->e_crlc);
+	printf("e_crlc:%04x\n",pDosHeader->e_crlc);
+	printf("e_cparhdr:%04x\n",pDosHeader->e_cparhdr);
+	printf("e_minalloc:%04x\n",pDosHeader->e_minalloc);
+	printf("e_maxalloc:%04x\n",pDosHeader->e_maxalloc);
+	printf("e_ss:%04x\n",pDosHeader->e_ss);
+	printf("e_sp:%04x\n",pDosHeader->e_sp);
+	printf("e_csum:%04x\n",pDosHeader->e_csum);
+	printf("e_ip:%04x\n",pDosHeader->e_ip);
+	printf("e_cs:%04x\n",pDosHeader->e_cs);
+	printf("e_lfarlc:%04x\n",pDosHeader->e_lfarlc);
+	printf("e_ovno:%04x\n",pDosHeader->e_ovno);
+	printf("e_res:%04x\n",pDosHeader->e_res[0]);
+	printf("e_oemid:%04x\n",pDosHeader->e_oemid);
+	printf("e_oeminfo:%04x\n",pDosHeader->e_oeminfo);
+	printf("e_res2:%04x\n",pDosHeader->e_res2[0]);
+	printf("e_lfanew:%08x\n",pDosHeader->e_lfanew);
+	shortArrayToString(pDosHeader->e_res);
+}
+
 
 int main(int argc,char **argv)
 {
-	FILE *pFile;
+	PIMAE_DOS_HEADER pDosHeader = NULL;
+	PIMAE_PE_HEADER pPEHeader = NULL;
+	PIMAE_OPTION_PE_HEADER pPEOptionHeader = NULL;
+
 	void *pFileBuffer;
 
 	if(argc!=2)
@@ -116,13 +160,14 @@ int main(int argc,char **argv)
 		exit(-1);
 	}
 
-	if (ReadFileToRAM(argv[1],&pFileBuffer) ==-1 )
+	if (readFileToRAM(argv[1],&pFileBuffer) ==-1 )
 	{
 		free(pFileBuffer);
 		exit(-1);
 	}
 
-	readDosHeader(pFileBuffer,pDosHeader);
+	readDosHeader(pFileBuffer,&pDosHeader);
+	printfDosHeader(pDosHeader);
 	free(pFileBuffer);
 
 	return 0;
