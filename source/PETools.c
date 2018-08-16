@@ -101,21 +101,29 @@ int readFileToRAM(char *pFilePath,void **pFileBuffer)
 	return 0;
 }
 
-void shortArrayToString(short shortArray[],char** stringBuf)
+void shortArrayToString(short shortArray[],int shortArrayLen,char** stringBuf)
 {
 	short *str = (short*)shortArray;
 
 	int i=0;
-	for(;i<sizeof(shortArray)/2;i++)	
+	for(;i<shortArrayLen/2;i++)	
 	{
-		char k[10];
-		sprintf(k,"%x",shortArray[i]);
+		char k[4];
+		sprintf(k,"%x",*str);
 		strcat(*stringBuf,k);
-
 		str++;
 	}
-	strcat (*stringBuf,"\n");
-	printf("长度:%d\n",strlen(stringBuf));
+	int hexStrLen = (int)strlen(*stringBuf);
+	int needZeroCount = shortArrayLen*2-hexStrLen;
+	char *stringBufTemp = malloc(shortArrayLen*2);
+	for(i=0;i<needZeroCount;i++)
+	{
+		char k[2];
+		sprintf(k,"%x",0);
+		strcat(stringBufTemp,k);
+	}
+	strcat(stringBufTemp,*stringBuf);
+	*stringBuf = stringBufTemp;
 }
 
 void printfDosHeader(PIMAE_DOS_HEADER pDosHeader)
@@ -135,7 +143,6 @@ void printfDosHeader(PIMAE_DOS_HEADER pDosHeader)
 	printf("e_cblp:%04x\n",pDosHeader->e_cblp);
 	printf("e_cp:%04x\n",pDosHeader->e_cp);
 	printf("e_crlc:%04x\n",pDosHeader->e_crlc);
-	printf("e_crlc:%04x\n",pDosHeader->e_crlc);
 	printf("e_cparhdr:%04x\n",pDosHeader->e_cparhdr);
 	printf("e_minalloc:%04x\n",pDosHeader->e_minalloc);
 	printf("e_maxalloc:%04x\n",pDosHeader->e_maxalloc);
@@ -146,14 +153,14 @@ void printfDosHeader(PIMAE_DOS_HEADER pDosHeader)
 	printf("e_cs:%04x\n",pDosHeader->e_cs);
 	printf("e_lfarlc:%04x\n",pDosHeader->e_lfarlc);
 	printf("e_ovno:%04x\n",pDosHeader->e_ovno);
-	hexString = malloc(sizeof(pDosHeader->e_res)/sizeof(short)+2);
-	shortArrayToString(pDosHeader->e_res,&hexString);
+	hexString = malloc(sizeof(pDosHeader->e_res)*sizeof(short));
+	shortArrayToString(pDosHeader->e_res,sizeof(pDosHeader->e_res),&hexString);
 	printf("e_res:%s\n",hexString);
 	free(hexString);
 	printf("e_oemid:%04x\n",pDosHeader->e_oemid);
 	printf("e_oeminfo:%04x\n",pDosHeader->e_oeminfo);
-	hexString = malloc(sizeof(pDosHeader->e_res)/sizeof(short)+2);
-	shortArrayToString(pDosHeader->e_res2,&hexString);
+	hexString = malloc(sizeof(pDosHeader->e_res2)*sizeof(short));
+	shortArrayToString(pDosHeader->e_res2,sizeof(pDosHeader->e_res2),&hexString);
 	printf("e_res2:%s\n",hexString);
 	free(hexString);
 	printf("e_lfanew:%08x\n",pDosHeader->e_lfanew);
