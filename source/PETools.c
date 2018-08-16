@@ -101,14 +101,21 @@ int readFileToRAM(char *pFilePath,void **pFileBuffer)
 	return 0;
 }
 
-void shortArrayToString(short* shortArray)
+void shortArrayToString(short shortArray[],char** stringBuf)
 {
+	short *str = (short*)shortArray;
+
 	int i=0;
-	for(;i<sizeof(shortArray);i++)
+	for(;i<sizeof(shortArray)/2;i++)	
 	{
-		printf("e_res:%04x",shortArray[i]);
+		char k[10];
+		sprintf(k,"%x",shortArray[i]);
+		strcat(*stringBuf,k);
+
+		str++;
 	}
-	printf("\n");
+	strcat (*stringBuf,"\n");
+	printf("长度:%d\n",strlen(stringBuf));
 }
 
 void printfDosHeader(PIMAE_DOS_HEADER pDosHeader)
@@ -118,6 +125,8 @@ void printfDosHeader(PIMAE_DOS_HEADER pDosHeader)
 		printf("读取Dos头时指针为NULL!\n");
 		return;
 	}
+
+	char *hexString = NULL;
 
 	printf("--------------------------------\n");
 	printf("           DOS头部分            \n");
@@ -137,12 +146,17 @@ void printfDosHeader(PIMAE_DOS_HEADER pDosHeader)
 	printf("e_cs:%04x\n",pDosHeader->e_cs);
 	printf("e_lfarlc:%04x\n",pDosHeader->e_lfarlc);
 	printf("e_ovno:%04x\n",pDosHeader->e_ovno);
-	printf("e_res:%04x\n",pDosHeader->e_res[0]);
+	hexString = malloc(sizeof(pDosHeader->e_res)/sizeof(short)+2);
+	shortArrayToString(pDosHeader->e_res,&hexString);
+	printf("e_res:%s\n",hexString);
+	free(hexString);
 	printf("e_oemid:%04x\n",pDosHeader->e_oemid);
 	printf("e_oeminfo:%04x\n",pDosHeader->e_oeminfo);
-	printf("e_res2:%04x\n",pDosHeader->e_res2[0]);
+	hexString = malloc(sizeof(pDosHeader->e_res)/sizeof(short)+2);
+	shortArrayToString(pDosHeader->e_res2,&hexString);
+	printf("e_res2:%s\n",hexString);
+	free(hexString);
 	printf("e_lfanew:%08x\n",pDosHeader->e_lfanew);
-	shortArrayToString(pDosHeader->e_res);
 }
 
 
